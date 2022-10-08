@@ -1,4 +1,5 @@
 # 图论模板
+## 0x00 最短路
 ### 0x01 floyd
 ```
 #include <iostream>
@@ -240,4 +241,86 @@ int main(){
     spfa();
     cout<<dist[en];
 }
+```
+
+### 0x05 johnson
+```
+#include <cstring>
+#include <utility>
+#include <cstdio>
+#include <queue>
+using namespace std;
+const int N=10000,INF=1e9;
+
+int Head[N],Edge[N],Leng[N],Next[N],tot;
+long long H[N],C[N],Dis[N];
+bool V[N];
+int n,m; 
+inline void addedge(int u,int v,int w){ Edge[++tot]=v,Leng[tot]=w,Next[tot]=Head[u],Head[u]=tot; }
+
+inline bool spfa(int s){
+	queue<int> q;
+	memset(H,0x3f,sizeof(H));
+	memset(V,false,sizeof(V));
+	H[s]=0,V[s]=true,q.push(s);
+	while(!q.empty()){
+		int x=q.front(); q.pop(); V[x]=false;
+		for(int i=Head[x]; i; i=Next[i]){
+			int y=Edge[i],z=Leng[i];
+			if(H[y]>H[x]+z){
+				H[y]=H[x]+z;
+				if(!V[y]){
+					V[y]=true,q.push(y),++C[y];
+					if(C[y]>n) return false;
+				} 
+			}
+		}
+	}
+	return true;
+}
+
+inline void dijkstra(int s){
+	priority_queue<pair<int,int> > q;
+	for(int i=1; i<=n; ++i) Dis[i]=INF;
+	memset(V,false,sizeof(V));
+	Dis[s]=0,q.push(make_pair(0,s));
+	while(!q.empty()){
+		int x=q.top().second; q.pop();
+		if(V[x]) continue;
+		V[x]=true;
+		for(int i=Head[x]; i; i=Next[i]){
+			int y=Edge[i],z=Leng[i];
+			if(Dis[y]>Dis[x]+z){
+				Dis[y]=Dis[x]+z;
+				if(!V[y]) q.push(make_pair(-Dis[y],y));
+			}
+		}
+	}
+	return;
+}
+
+int main(){
+	scanf("%d%d",&n,&m);
+	for(int i=1; i<=m; ++i){
+		int x,y,z;
+		scanf("%d%d%d",&x,&y,&z);
+		addedge(x,y,z);
+	}
+	
+	for(int i=1; i<=n; ++i) addedge(0,i,0);
+	if(!spfa(0)) return puts("-1")&0;
+	
+	for(int i=1; i<=n; ++i)
+		for(int j=Head[i]; j; j=Next[j])
+			Leng[j]=Leng[j]+H[i]-H[Edge[j]];
+	for(int i=1; i<=n; ++i){
+		dijkstra(i);
+		long long ans=0;
+		for(int j=1; j<=n; ++j)
+			ans+=j*(Dis[j]==INF ? INF : Dis[j]-H[i]+H[j]);
+		printf("%lld\n",ans);
+	}
+	return 0;
+}
+
 ```
